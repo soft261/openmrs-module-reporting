@@ -12,6 +12,7 @@ package org.openmrs.module.reporting.web.taglib;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -48,57 +49,57 @@ import org.springframework.util.StringUtils;
 public class FormatTag extends TagSupport {
 
 	public static final long serialVersionUID = 1L;
-	
+
 	private final Log log = LogFactory.getLog(getClass());
-	
+
 	private String var;
-	
+
 	private Object object;
-	
+
 	private Date date;
-	
+
 	private Integer conceptId;
-	
+
 	private Concept concept;
-	
+
 	private Obs obsValue;
-	
+
 	private Integer userId;
-	
+
 	private User user;
-	
+
 	private Integer encounterId;
-	
+
 	private Encounter encounter;
-	
+
 	private Integer encounterTypeId;
-	
+
 	private EncounterType encounterType;
-	
+
 	private Integer locationId;
-	
+
 	private Location location;
-	
+
 	private String string;
-	
+
 	private ReportData reportData;
-	
+
 	private DataSet dataSet;
-	
+
 	private Cohort cohort;
-			
+
 	public static String format(Object object) {
 		StringBuilder sb = new StringBuilder();
 		new FormatTag().printObject(sb, object);
 		return sb.toString();
 	}
-	
+
 	public int doStartTag() {
 		StringBuilder sb = new StringBuilder();
 		if (object != null) {
 			printObject(sb, object);
 		}
-		
+
 		if (date != null)
 			printDate(sb, date);
 
@@ -107,48 +108,48 @@ public class FormatTag extends TagSupport {
 		if (concept != null) {
 			printConcept(sb, concept);
 		}
-		
+
 		if (obsValue != null)
 			printObsValue(sb, obsValue);
-		
+
 		if (userId != null)
 			user = Context.getUserService().getUser(userId);
 		if (user != null)
 			printUser(sb, user);
-		
+
 		if (encounterId != null)
 			encounter = Context.getEncounterService().getEncounter(encounterId);
 		if (encounter != null) {
 			printEncounter(sb, encounter);
 		}
-		
+
 		if (encounterTypeId != null)
 			encounterType = Context.getEncounterService().getEncounterType(encounterTypeId);
 		if (encounterType != null) {
 			printEncounterType(sb, encounterType);
 		}
-		
+
 		if (locationId != null)
 			location = Context.getLocationService().getLocation(locationId);
 		if (location != null) {
 			printLocation(sb, location);
 		}
-		
+
 		if (reportData != null) {
 			printReportData(sb, reportData);
 		}
-		
+
 		if (dataSet != null) {
 			printDataSet(sb, null, dataSet);
 		}
-		
+
 		if (cohort != null) {
 			printCohort(sb, cohort);
 		}
-		
+
 		if (string != null)
 			sb.append(string);
-		
+
 		if (StringUtils.hasText(var)) {
 			pageContext.setAttribute(var, sb.toString());
 		} else {
@@ -202,7 +203,7 @@ public class FormatTag extends TagSupport {
 				printMap(sb, ((BaseData)o).getData());
 			} else if (o instanceof IdSet) {
 				printCollection(sb, ((IdSet)o).getMemberIds());
-			} 
+			}
 			else {
 				sb.append(ObjectUtil.format(o));
 			}
@@ -228,7 +229,7 @@ public class FormatTag extends TagSupport {
 
 	/**
      * formats a date and prints it to sb
-     * 
+     *
      * @param sb
      * @param date
      */
@@ -238,7 +239,7 @@ public class FormatTag extends TagSupport {
 
 	/**
      * formats a location and prints it to sb
-     * 
+     *
      * @param sb
      * @param location
      */
@@ -248,7 +249,7 @@ public class FormatTag extends TagSupport {
 
 	/**
      * formats an encounter type and prints it to sb
-     * 
+     *
      * @param sb
      * @param encounterType
      */
@@ -258,27 +259,27 @@ public class FormatTag extends TagSupport {
 
 	/**
      * formats a user and prints it to sb
-     * 
+     *
      * @param sb
      * @param u
      */
     private void printUser(StringBuilder sb, User u) {
     	sb.append(u.getPersonName());
     }
-    
+
     /**
      * formats a user and prints it to sb
-     * 
+     *
      * @param sb
      * @param u
      */
     private void printUser(StringBuilder sb, Person u) {
         sb.append(u.getPersonName());
     }
-    
+
 	/**
 	 * Formats a ReportData and prints it to sb
-	 * 
+	 *
 	 * @param sb
 	 * @param reportData
 	 */
@@ -288,11 +289,11 @@ public class FormatTag extends TagSupport {
 	    	printDataSet(sb, ds.getKey(), ds.getValue());
 	    }
     }
-    
-	
+
+
 	/**
 	 * Formats a DataSet and prints it to sb
-	 * 
+	 *
 	 * @param sb
 	 * @param title
 	 * @param dataSet
@@ -335,10 +336,10 @@ public class FormatTag extends TagSupport {
 	    sb.append("</tbody>");
 	    sb.append("</table>");
     }
-	
+
 	/**
 	 * Formats a DataSet and prints it to sb
-	 * 
+	 *
 	 * @param sb
 	 * @param title
 	 * @param dataSet
@@ -352,17 +353,17 @@ public class FormatTag extends TagSupport {
 		}
 		sb.append("</table>");
     }
-	
+
 	/**
 	 * formats a cohort to sb
-	 * 
+	 *
 	 * @param sb
 	 * @param cohort
 	 */
 	private void printCohort(StringBuilder sb, Cohort cohort) {
-		sb.append(cohort.size() + " patients");
+		printCollection(sb, cohort.getMemberIds());
     }
-	
+
 	private void printObsValue(StringBuilder sb, Obs obsValue) {
 		sb.append(obsValue.getValueAsString(Context.getLocale()));
     }
@@ -379,7 +380,7 @@ public class FormatTag extends TagSupport {
 		sb.append(" | ");
 		printDate(sb, encounter.getEncounterDatetime());
 		sb.append(" | ");
-		
+
 		try {
 			Method method = encounter.getClass().getMethod("getProvider", null);
 			Object provider = method.invoke(encounter, null);
@@ -389,7 +390,7 @@ public class FormatTag extends TagSupport {
 			//should be a newer version that removed the getProvider method
 		}
     }
-	
+
 	private void printMap(StringBuilder sb, Map<?, ?> m) {
 		if (m != null) {
 			sb.append("<table cellspacing=\"0\" cellpadding=\"2\" border=\"1\">");
@@ -399,17 +400,17 @@ public class FormatTag extends TagSupport {
 			sb.append("</table>");
 		}
 	}
-	
+
 	private void printCollection(StringBuilder sb, Collection<?> c){
 		if(c != null){
-			sb.append("<table cellspacing=\"0\" cellpadding=\"2\" border=\"1\">");
-			sb.append("<tr><th align=\"left\">" + Context.getMessageSourceService().getMessage("reporting.ids") + "</th></tr>");
+			sb.append("<table id=\"collectionTable\" cellspacing=\"0\" cellpadding=\"2\" border=\"1\"></table>");
+			Collection<Object> tableData = new ArrayList<Object>();
 			for (Object item : c) {
-				sb.append("<tr><td align=\"left\">");
-				printObject(sb, item);
-				sb.append("</td></tr>");
+				Collection<Object> tableRow = new ArrayList<Object>();
+				tableRow.add(item);
+				tableData.add(tableRow);
 			}
-			sb.append("</table>");
+			sb.append("<script>$j('#collectionTable').dataTable({\"aaData\":" + tableData + ", \"bPaginate\":true, \"bLengthChange\":false, \"bFilter\":false, \"bSort\":false, \"bInfo\":true, \"bAutoWidth\":false, \"aoColumns\":[{\"sTitle\": \"" + Context.getMessageSourceService().getMessage("reporting.ids") + "\"}]});</script>");
 		}
 	}
 
@@ -433,7 +434,7 @@ public class FormatTag extends TagSupport {
 		reset();
 		return EVAL_PAGE;
 	}
-	
+
 	private void reset() {
 		var = null;
 		object = null;
@@ -454,43 +455,43 @@ public class FormatTag extends TagSupport {
 		cohort = null;
 		string = null;
 	}
-	
+
 	public Integer getConceptId() {
 		return conceptId;
 	}
-	
+
 	public void setConceptId(Integer conceptId) {
 		this.conceptId = conceptId;
 	}
-	
+
 	public Concept getConcept() {
 		return concept;
 	}
-	
+
 	public void setConcept(Concept concept) {
 		this.concept = concept;
 	}
-	
+
 	public Obs getObsValue() {
 		return obsValue;
 	}
-	
+
 	public void setObsValue(Obs obsValue) {
 		this.obsValue = obsValue;
 	}
-	
+
 	public Integer getUserId() {
 		return userId;
 	}
-	
+
 	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
-	
+
 	public User getUser() {
 		return user;
 	}
-	
+
 	public void setUser(User user) {
 		this.user = user;
 	}
@@ -510,15 +511,15 @@ public class FormatTag extends TagSupport {
     public void setEncounter(Encounter encounter) {
     	this.encounter = encounter;
     }
-	
+
     public Integer getEncounterTypeId() {
     	return encounterTypeId;
     }
-	
+
     public void setEncounterTypeId(Integer encounterTypeId) {
     	this.encounterTypeId = encounterTypeId;
     }
-	
+
     public EncounterType getEncounterType() {
     	return encounterType;
     }
@@ -526,7 +527,7 @@ public class FormatTag extends TagSupport {
     public void setEncounterType(EncounterType encounterType) {
     	this.encounterType = encounterType;
     }
-	
+
     public Integer getLocationId() {
     	return locationId;
     }
@@ -534,7 +535,7 @@ public class FormatTag extends TagSupport {
     public void setLocationId(Integer locationId) {
     	this.locationId = locationId;
     }
-    
+
     public Location getLocation() {
     	return location;
     }
@@ -542,11 +543,11 @@ public class FormatTag extends TagSupport {
     public void setLocation(Location location) {
     	this.location = location;
     }
-	
+
     public String getVar() {
     	return var;
     }
-	
+
     public void setVar(String var) {
     	this.var = var;
     }
@@ -566,5 +567,5 @@ public class FormatTag extends TagSupport {
     public void setDate(Date date) {
     	this.date = date;
     }
-	
+
 }
